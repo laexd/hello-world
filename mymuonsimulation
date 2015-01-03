@@ -1,11 +1,10 @@
- 
+ Simulates muons passing through 
  
 function tout = Mymuonsim(timeres)
 n=1000000; %no of muons
 c = 3e10; %cm/s speed of muons between scintillators
  
-%v = 2e10; % time for signal to traverse optical fibres. Not c, but assumed
-for now.
+%v = 2e10; % time for signal to traverse optical fibres in cm/s
  
 %choose time resolution to smear results by.
 X=zeros(1,n);
@@ -47,3 +46,138 @@ for j=1:n
  end
 end
 A=zeros(1,K);
+
+B=zeros(1,K);
+t_top=zeros(1,K);
+t_bot=zeros(1,K);
+t_mid=zeros(1,K);
+t_flight_tb=zeros(1,K);
+t_flight_tm=zeros(1,K);
+t_flight_mb=zeros(1,K);
+T=zeros(1,K);
+T_top_mid=zeros(1,K);
+T_mid_bot=zeros(1,K);
+Smeared_T_top_mid = zeros(1,K);
+Smeared_T_mid_bot = zeros(1,K);
+Smeared_T_top_bot = zeros(1,K);
+k=1;
+for j=1:n
+
+ if X(j) >= -12.5 && X(j) <= 12.5 && Y(j) >= -12.5 && Y(j) <= 12.5
+
+ B(k) = Y(j); %final y-coord on bottom scint
+ A(k) = X(j); %final x-coord on bottom scint
+
+ t_top(k) = (12.5 - (X(j)- x(j)))./(2e10);
+ t_bot(k) = (12.5 - X(j))./(2e10);
+ t_mid(k) = (12.5 - U(j))./(2e10);
+
+ %Calculate distance between initial and final points, then time
+ %Need to account for time taken for signals to travel to edge of
+scintillator. Choose to go to x = 12.5
+ t_flight_tb(k) = (sqrt((x(j)).^2 + (y(j)).^2 + (z(j)).^2))/c;
+%Distance between initial and final points, if final still in scint (cm)
+ t_flight_tm(k) = (sqrt((u(j)).^2 + (v(j)).^2 + (w(j)).^2))/c;
+ t_flight_mb(k) = (sqrt((x(j)-u(j)).^2 + (y(j)-v(j)).^2 + (z(j)-
+w(j)).^2))/c;
+
+
+ T_top_mid(k) = (t_flight_tm(k) + t_top(k) + t_mid(k))*(10.^9);
+ T_mid_bot(k) = (t_flight_mb(k) + t_mid(k) + t_bot(k))*(10.^9);
+ T(k) = (t_flight_tb(k) + t_bot(k) + t_top(k))*(10.^9);
+
+ Smeared_T_top_mid(k) = normrnd(T_top_mid(k),timeres);
+ Smeared_T_mid_bot(k) = normrnd(T_mid_bot(k),timeres);
+ Smeared_T_top_bot(k) = normrnd(T(k),timeres);
+
+ k = k+1;
+ end
+end
+%in ns
+%Plot of all final destination
+
+%plot3(x,y,z,'.')
+%plot(A,B,'.')
+%Final points within second scintillator
+%Plot histogram, find time resolution. BEFORE SMEARING
+nbins = 100;
+%h1=figure;
+histfit(T,nbins);
+title('Histogram showing simulated time difference between signals from top
+and bottom scintillators');
+xlabel('Time difference/ns');
+ylabel('No. of events');
+%saveas(h1, 'Time_histogram_top_bot.png');
+hold off;
+%h2=figure;
+histfit(T_top_mid,nbins);
+title('Histogram showing simulated time difference between signals from top
+and middle scintillators');
+xlabel('Time difference/ns');
+ylabel('No. of events');
+%saveas(h2, 'Time_histogram_top_mid.png');
+hold off;
+%h3=figure;
+histfit(T_mid_bot,nbins);
+title('Histogram showing simulated time difference between signals from
+bottom and middle scintillators');
+xlabel('Time difference/ns');
+ylabel('No. of events');
+%saveas(h3, 'Time_histogram_mid_bot.png');
+hold off;
+[mu,sigma,muci,sigmaci] = normfit(T); %Fit T to normal distribution
+hold off;
+[mutm,sigmatm,mucitm,sigmacitm] = normfit(T_top_mid);
+hold off;
+[mumb,sigmamb,mucimb,sigmacimb] = normfit(T_mid_bot);
+hold off;
+%disp('Time resolution');
+%disp(2.355*sigma) ;
+%disp(2.355*sigmatm);
+%disp(2.355*sigmamb) ;
+%disp('Number of events')
+%disp(k) %Number of muons that went through both scintillators%Need to produce standard distributions from all these results, and thus
+%introduce smearing.
+%AFTER SMEARING
+%disp('AFTER SMEARING')
+nbins = 100;
+h4=figure;
+histfit(Smeared_T_top_bot,nbins);
+title('Histogram showing simulated time difference between signals from top
+and bottom scintillators with smear');
+xlabel('Time difference/ns');
+ylabel('No. of events');
+saveas(h4, 'Time_histogram_top_bot_smear.png');
+hold off;
+h5=figure;
+histfit(Smeared_T_top_mid,nbins);
+title('Histogram showing simulated time difference between signals from top
+and middle scintillators with smear');
+xlabel('Time difference/ns');
+ylabel('No. of events');
+saveas(h5, 'Time_histogram_top_mid_smear.png');
+hold off;
+h6=figure;
+histfit(Smeared_T_mid_bot,nbins);
+title('Histogram showing simulated time difference between signals from
+bottom and middle scintillators with smear');
+xlabel('Time difference/ns');
+ylabel('No. of events');
+saveas(h6, 'Time_histogram_mid_bot_smear.png');
+hold off;
+[mus,sigmas,mucis,sigmacis] = normfit(Smeared_T_top_bot); %Fit T to normal
+distribution
+hold off;
+[mutms,sigmatms,mucitms,sigmacitms] = normfit(Smeared_T_top_mid);
+hold off;
+[mumbs,sigmambs,mucimbs,sigmacimbs] = normfit(Smeared_T_mid_bot);
+hold off;
+tout = 2.355*sigma;
+%disp('Time resolution')
+%disp('top bottom ')
+%disp(2.355*sigmas)
+%disp('top middle')
+%disp(2.355*sigmatms)
+%disp('middle bottom')
+%disp(2.355*sigmambs)
+end
