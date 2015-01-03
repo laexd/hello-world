@@ -1,0 +1,49 @@
+ 
+ 
+function tout = Mymuonsim(timeres)
+n=1000000; %no of muons
+c = 3e10; %cm/s speed of muons between scintillators
+ 
+%v = 2e10; % time for signal to traverse optical fibres. Not c, but assumed
+for now.
+ 
+%choose time resolution to smear results by.
+X=zeros(1,n);
+Y=zeros(1,n);
+Z=zeros(1,n);
+x=zeros(1,n);
+y=zeros(1,n);
+z=zeros(1,n);
+u=zeros(1,n);
+v=zeros(1,n);
+w=zeros(1,n);
+U=zeros(1,n);
+V=zeros(1,n);
+ 
+ 
+%starting point, top scintillator.
+RR = 25*rand(n,2)-12.5;
+ 
+%Need to set radius, so muon is stopped when it hits the next scintillator.
+for i=1:n
+ 
+ %generate random direction
+ [x(i),y(i),z(i),u(i),v(i),w(i)]=myspherdist(60.7+13.6,13.6);
+ %choose end point.
+ X(i) = RR(i,1) + x(i);
+ Y(i) = RR(i,2) + y(i);
+ 
+ U(i) = RR(i,1) + u(i);
+ V(i) = RR(i,2) + v(i);
+ 
+end
+ 
+%Work out whether end point is outside of base scintillator
+%Choose limits between -12.5 and +12.5 on x/y axis.
+K=1;
+for j=1:n
+ if X(j) >= -12.5 && X(j) <= 12.5 && Y(j) >= -12.5 && Y(j) <= 12.5
+ K = K+1;
+ end
+end
+A=zeros(1,K);
