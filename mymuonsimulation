@@ -1,12 +1,19 @@
  Simulates muons passing through 
  
-function tout = Mymuonsim(timeres)
+ %time resolution chosen to smear results by is actually sorted out by a seperate iterative function, 
+ % which uses Mymuonsim and then manually tested.
+ 
+function tout = Mymuonsim(timeres) 
+
 n=1000000; %no of muons
+
 c = 3e10; %cm/s speed of muons between scintillators
  
 %v = 2e10; % time for signal to traverse optical fibres in cm/s
  
-%choose time resolution to smear results by.
+ 
+%Preallocate arrays 
+
 X=zeros(1,n);
 Y=zeros(1,n);
 Z=zeros(1,n);
@@ -20,18 +27,24 @@ U=zeros(1,n);
 V=zeros(1,n);
  
  
-%starting point, top scintillator.
+% chooses a random starting point on the top scintillator.
 RR = 25*rand(n,2)-12.5;
  
-%Need to set radius, so muon is stopped when it hits the next scintillator.
+%Generate the random direction for the muon from the top scintillator. 
+
 for i=1:n
  
  %generate random direction
- [x(i),y(i),z(i),u(i),v(i),w(i)]=myspherdist(60.7+13.6,13.6);
- %choose end point.
+ [x(i),y(i),z(i),u(i),v(i),w(i)]=myspherdist(60.7+13.6,13.6); %numbers in myspherdist are distances between top and bottom scintillator
+ %and top and middle scintillator respectively.
+ 
+
+ %choose final x & y coordinates, add initial top coords to random direction
+ %bottom scintillator
  X(i) = RR(i,1) + x(i);
  Y(i) = RR(i,2) + y(i);
  
+ %top scintillator
  U(i) = RR(i,1) + u(i);
  V(i) = RR(i,2) + v(i);
  
@@ -45,8 +58,8 @@ for j=1:n
  K = K+1;
  end
 end
-A=zeros(1,K);
 
+A=zeros(1,K)
 B=zeros(1,K);
 t_top=zeros(1,K);
 t_bot=zeros(1,K);
