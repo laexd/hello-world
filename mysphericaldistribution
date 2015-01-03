@@ -1,0 +1,15 @@
+function [x,y,z,i,j,k]=myspherdist(a,b)
+RR=rand(2,1);
+%sqrt from cos^2 distribution
+theta=acos((RR(1,:))*2 -1);
+phi=2*pi*RR(2,:);
+ra=sqrt((a./(cos(theta))).^2);
+rb=sqrt((b./(cos(theta))).^2);
+x=ra.*sin(theta).*cos(phi);
+y=ra.*sin(theta).*sin(phi);
+z=a;
+i=rb.*sin(theta).*cos(phi);
+j=rb.*sin(theta).*sin(phi);
+k=b;
+ 
+end
